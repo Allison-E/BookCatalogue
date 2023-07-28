@@ -1,0 +1,59 @@
+﻿@page "/subjects"
+@using BookCatalogue.Web.Data
+@inject SubjectService SubjectService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Subjects</PageTitle>
+
+<h1>Subjects</h1>
+
+@if (subjects == null)
+{
+    <div class="d-flex justify-content-center align-items-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <p>Here are a list of subjects in our catalogue. Click on any of them to view.</p>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var subject in subjects)
+            {
+                <tr onclick="@(() => OpenViewSubjectView(subject.Id))">
+                    <td>@subject.Title</td>
+                    <td>@subject.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button type="button" class="btn btn-primary" @onclick="(() => OpenAddSubjectView())">Add subject</button>
+}
+
+@code {
+    private IEnumerable<Subject>? subjects;
+
+    protected override async Task OnInitializedAsync()
+    {
+        subjects = await SubjectService.GetSubjectsAsync();
+    }
+
+    public void OpenViewSubjectView(Guid subjectId)
+    {
+        NavigationManager.NavigateTo($"/subjects/{subjectId.ToString()}", true);
+    }
+
+    public void OpenAddSubjectView()
+    {
+        NavigationManager.NavigateTo($"/new-subject");
+    }
+}

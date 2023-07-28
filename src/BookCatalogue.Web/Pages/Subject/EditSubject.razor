@@ -1,0 +1,31 @@
+﻿@using BookCatalogue.Web.Data
+@using BookCatalogue.Web.Services
+@inject AuthorService AuthorService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit - @Author.Name</PageTitle>
+
+@{
+    string formId = "form";
+}
+
+<AddAuthorDetails OnValidSubmit="EditAuthorAsync" Id="@formId" @ref="authorDetails" Author="Author" />
+<button type="submit" class="btn btn-primary" form="@formId">Done</button>
+<button type="button" class="btn btn-secondary" @onclick="CancelButtonClicked">Cancel</button>
+
+@code {
+    [Parameter]
+    public Author Author { get; set; }
+
+    [Parameter]
+    public EventCallback CancelButtonClicked { get; set; }
+
+    private AddAuthorDetails authorDetails;
+
+    private async Task EditAuthorAsync()
+    {
+        bool successful = await AuthorService.EditAuthorAsync(authorDetails.Author);
+
+        await CancelButtonClicked.InvokeAsync();
+    }
+}

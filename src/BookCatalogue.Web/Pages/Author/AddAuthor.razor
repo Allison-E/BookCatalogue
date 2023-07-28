@@ -1,0 +1,33 @@
+﻿@page "/new-author"
+@using BookCatalogue.Web.Data
+@using BookCatalogue.Web.Services
+@inject AuthorService AuthorService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Add author</PageTitle>
+
+@{
+    string formId = "form";
+}
+
+<h1>Add author</h1>
+
+<AddAuthorDetails OnValidSubmit="HandleValidInput" Id="@formId" @ref="authorDetails"/>
+<button type="submit" class="btn btn-primary" form="@formId">Add author</button>
+<button type="submit" class="btn btn-secondary" @onclick="Close">Cancel</button>
+
+@code {
+    private AddAuthorDetails authorDetails { get; set; }
+    public async Task HandleValidInput(EditContext editContext)
+    {
+        var successful = await AuthorService.AddAuthorAsync(authorDetails.Author);
+
+        if (successful)
+            Close();
+    }
+
+    public void Close()
+    {
+        NavigationManager.NavigateTo($"/authors", true);
+    }
+}

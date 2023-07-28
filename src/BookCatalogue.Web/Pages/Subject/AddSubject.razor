@@ -1,0 +1,33 @@
+﻿@page "/new-subject"
+@using BookCatalogue.Web.Data
+@using BookCatalogue.Web.Services
+@inject SubjectService SubjectService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Add subject</PageTitle>
+
+@{
+    string formId = "form";
+}
+
+<h1>Add subject</h1>
+
+<AddSubjectDetails OnValidSubmit="HandleValidInput" Id="@formId" @ref="subjectDetails"/>
+<button type="submit" class="btn btn-primary" form="@formId">Add subject</button>
+<button type="submit" class="btn btn-secondary" @onclick="Close">Cancel</button>
+
+@code {
+    private AddSubjectDetails subjectDetails { get; set; }
+    public async Task HandleValidInput(EditContext editContext)
+    {
+        var successful = await SubjectService.AddSubjectAsync(subjectDetails.Subject);
+
+        if (successful)
+            Close();
+    }
+
+    public void Close()
+    {
+        NavigationManager.NavigateTo($"/subjects", true);
+    }
+}

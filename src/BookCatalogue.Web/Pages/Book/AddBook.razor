@@ -1,0 +1,52 @@
+﻿@page "/new-book"
+@using BookCatalogue.Web.Data
+@using BookCatalogue.Web.Services
+@inject BookService BookService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Add book</PageTitle>
+
+<h1>Add book</h1>
+
+<EditForm Model="@book" OnValidSubmit="HandleValidInput">
+    <div>
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="row mb-3">
+            <label for="inputEmail3" class="col-sm-2 col-form-label">First Name</label>
+            <div class="col-sm-10">
+                <InputText class="form-control" id="inputEmail3" @bind-Value="book.Title" placeholder="Robert"/>
+            </div>
+        </div>
+        @*<div class="row mb-3">
+            <label for="inputEmail3" class="col-sm-2 col-form-label">Last name</label>
+            <div class="col-sm-10">
+                <InputText class="form-control" id="inputEmail3" @bind-Value="book.Lastname" placeholder="Kiyosaki"/>
+            </div>
+        </div>*@
+        <button type="submit" class="btn btn-primary">Add book</button>
+        <button type="submit" class="btn btn-secondary" @onclick="Close">Cancel</button>
+    </div>
+</EditForm>
+
+@code {
+    private Book book;
+
+    protected override void OnInitialized()
+    {
+        book = new();
+    }
+
+    public async Task HandleValidInput(EditContext editContext)
+    {
+        var successful = await BookService.AddBookAsync(book);
+
+        if (successful)
+            Close();
+    }
+
+    public void Close()
+    {
+        NavigationManager.NavigateTo($"/books", true);
+    }
+}

@@ -1,0 +1,68 @@
+﻿@page "/authors/{AuthorId}"
+@using BookCatalogue.Web.Data
+@inject AuthorService AuthorService
+@inject NavigationManager NavigationManager
+
+@if (author == null)
+{
+    if (!AuthorLoaded)
+    {
+        <div class="d-flex justify-content-center align-items-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <NotFound />
+    }
+}
+else
+{
+    <PageTitle>@author.Name</PageTitle>
+
+    @if (IsReadOnly)
+    {
+        <ViewAuthor Author="author" EditButtonClicked="ToggleIsReadOnly" />
+    }
+    else
+    {
+        <EditAuthor Author="authorCopy" CancelButtonClicked="ToggleIsReadOnly" />
+    }
+}
+
+@code {
+    [Parameter]
+    public string AuthorId { get; set; }
+
+    private Author? author;
+    private Author? authorCopy;
+    private bool IsReadOnly { get; set; } = true;
+    private bool AuthorLoaded { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        author = await AuthorService.GetAuthorByIdAsync(AuthorId);
+        authorCopy = author is null ? null
+        : new()
+            {
+                Id = author.Id,
+                Books = author.Books,
+                Firstname = author.Firstname,
+                Lastname = author.Lastname,
+            };
+        AuthorLoaded = true;
+    }
+
+    private async Task ToggleIsReadOnly()
+    {
+        IsReadOnly = !IsReadOnly;
+
+        if (IsReadOnly) // Previously edited.
+        {
+            author = await AuthorService.GetAuthorByIdAsync(AuthorId);
+            StateHasChanged();
+        }
+    }
+}

@@ -1,0 +1,62 @@
+﻿@using BookCatalogue.Web.Services
+@using BookCatalogue.Web.Data
+@inject SubjectService SubjectService
+@inject NavigationManager NavigationManager
+
+<PageTitle>@Subject.Title</PageTitle>
+
+<h1>@Subject.Title</h1>
+<h2>Description</h2>
+<p>@(!string.IsNullOrEmpty(Subject.Description) ? Subject.Description : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.")</p>
+
+@if (subjectBooks != null)
+{
+    <div class="row row-cols-1 row-cols-md-5 g-4" style="margin-bottom:1.5rem;">
+        @foreach (var book in subjectBooks)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    <img src="~/images.jpg" class="card-img-top" alt="Book image">
+                    <div class="card-body">
+                        <h5 class="card-title">@book.Title</h5>
+                        <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">Published: @book.YearPublished</small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+<button type="button" class="btn btn-primary" @onclick="EditButtonClicked">Edit</button>
+<button type="button" class="btn btn-danger" @onclick="(() => DeleteClicked())">Delete</button>
+<Popup @ref="popup" OnButtonClick="DeleteSubjectAsync" />
+
+@code {
+    [Parameter]
+    public Subject Subject { get; set; }
+    [Parameter]
+    public EventCallback EditButtonClicked { get; set; }
+
+    private Popup popup { get; set; }
+    private IEnumerable<SubjectBook>? subjectBooks;
+
+    protected override async Task OnInitializedAsync()
+    {
+        subjectBooks = await SubjectService.GetSubjectBooksByIdAsync(Subject.Id.ToString());
+    }
+
+    private async void DeleteSubjectAsync()
+    {
+        bool successful = await SubjectService.DeleteSubjectByIdAsync(Subject.Id.ToString());
+
+        if (successful)
+            NavigationManager.NavigateTo("/subjects");
+    }
+
+    private void DeleteClicked()
+    {
+        popup.Show("Are you sure you want to delete?", "Delete subject", "Yes, I'm sure");
+    }
+}

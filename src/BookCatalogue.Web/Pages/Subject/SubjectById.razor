@@ -1,0 +1,68 @@
+﻿@page "/subjects/{SubjectId}"
+@using BookCatalogue.Web.Data
+@inject SubjectService SubjectService
+@inject NavigationManager NavigationManager
+
+@if (subject == null)
+{
+    if (!SubjectLoaded)
+    {
+        <div class="d-flex justify-content-center align-items-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <NotFound />
+    }
+}
+else
+{
+    <PageTitle>@subject.Title</PageTitle>
+
+    @if (IsReadOnly)
+    {
+        <ViewSubject Subject="subject" EditButtonClicked="ToggleIsReadOnly" />
+    }
+    else
+    {
+        <EditSubject Subject="subjectCopy" CancelButtonClicked="ToggleIsReadOnly" />
+    }
+}
+
+@code {
+    [Parameter]
+    public string SubjectId { get; set; }
+
+    private Subject? subject;
+    private Subject? subjectCopy;
+    private bool IsReadOnly { get; set; } = true;
+    private bool SubjectLoaded { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        subject = await SubjectService.GetSubjectByIdAsync(SubjectId);
+        subjectCopy = subject is null ? null
+        : new()
+            {
+                Id = subject.Id,
+                Books = subject.Books,
+                Title = subject.Title,
+                Description = subject.Description,
+            };
+        SubjectLoaded = true;
+    }
+
+    private async Task ToggleIsReadOnly()
+    {
+        IsReadOnly = !IsReadOnly;
+
+        if (IsReadOnly) // Previously edited.
+        {
+            subject = await SubjectService.GetSubjectByIdAsync(SubjectId);
+            StateHasChanged();
+        }
+    }
+}

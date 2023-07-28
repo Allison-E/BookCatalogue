@@ -1,0 +1,68 @@
+﻿@page "/books"
+@using BookCatalogue.Web.Data
+@inject BookService BookService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Books</PageTitle>
+
+<h1>Books</h1>
+
+@if (books == null)
+{
+    <div class="d-flex justify-content-center align-items-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <p>Here are a list of books in our catalogue. Click on any of them to view.</p>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Subject</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var book in books)
+            {
+                <tr onclick="@(() => OpenViewBookView(book.Id))">
+                    <td>@book.Title</td>
+                    @{
+                        var subjectsList = book.Subjects?.Select(s => s.Title) ?? new List<string>();
+                        string? subjects = null;
+
+                        if (subjectsList.Count() != 0)
+                        {
+                            subjects = subjectsList.Aggregate((s1, s2) => s1 + ", " + s2);
+                        }
+                    }
+                    <td><i>@subjects</i></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button type="button" class="btn btn-primary" @onclick="(() => OpenAddBookView())">Add book</button>
+}
+
+@code {
+    private IEnumerable<Book>? books;
+
+    protected override async Task OnInitializedAsync()
+    {
+        books = await BookService.GetBooksAsync();
+    }
+
+    public void OpenViewBookView(Guid bookId)
+    {
+        NavigationManager.NavigateTo($"/books/{bookId.ToString()}", true);
+    }
+
+    public void OpenAddBookView()
+    {
+        NavigationManager.NavigateTo($"/new-book");
+    }
+}

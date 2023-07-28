@@ -1,0 +1,92 @@
+﻿@page "/books/{BookId}"
+@using BookCatalogue.Web.Services
+@using BookCatalogue.Web.Data
+@inject BookService BookService
+@inject NavigationManager NavigationManager
+
+<PageTitle>@(book?.Title ?? null)</PageTitle>
+
+    @if (book == null)
+{
+    if (!BookLoaded)
+    {
+        <div class="d-flex justify-content-center align-items-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <NotFound />
+    }
+}
+else
+{
+    <p>
+        @book.Title
+    </p>
+    <h3>Book Summary</h3>
+    <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+    </p>
+    @if (book.Authors != null)
+    {
+        <p>Book authors</p>
+
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Firstname</th>
+                    <th>Lastname</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var author in book.Authors)
+                {
+                    <tr onclick="@(() => OpenViewAuthorView(author.Id))">
+                        <td>@author.Firstname</td>
+                        <td>@author.Lastname</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    <button type="button" class="btn btn-danger" @onclick="(() => DeleteClicked())">
+        Delete
+    </button>
+    <Popup @ref="popup" OnButtonClick="DeleteBookAsync" />
+}
+
+@code {
+    [Parameter]
+    public string BookId { get; set; }
+    private Book? book { get; set; }
+    private Popup popup { get; set; }
+    private bool BookLoaded { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        book = await BookService.GetBookByIdAsync(BookId);
+        BookLoaded = true;
+    }
+
+    private async void DeleteBookAsync()
+    {
+        bool successful = await BookService.DeleteBookByIdAsync(BookId);
+
+        if (successful)
+            NavigationManager.NavigateTo("/books");
+    }
+
+    private void DeleteClicked()
+    {
+        popup.Show("Are you sure you want to delete?", "Delete book", "Yes, I'm sure");
+    }
+
+    public void OpenViewAuthorView(Guid authorId)
+    {
+        NavigationManager.NavigateTo($"/authors/{authorId.ToString()}", true);
+    }
+
+}

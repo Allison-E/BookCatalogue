@@ -1,0 +1,61 @@
+﻿@using BookCatalogue.Web.Services
+@using BookCatalogue.Web.Data
+@inject AuthorService AuthorService
+@inject NavigationManager NavigationManager
+
+<PageTitle>@Author.Name</PageTitle>
+
+<h1>@Author.Name</h1>
+<p>@Author.Name is a professional author with many years of writing.</p>
+
+@if (authorBooks != null)
+{
+    <div class="row row-cols-1 row-cols-md-5 g-4" style="margin-bottom:1.5rem;">
+        @foreach (var book in authorBooks)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    <img src="~/images.jpg" class="card-img-top" alt="Book image">
+                    <div class="card-body">
+                        <h5 class="card-title">@book.Title</h5>
+                        <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">Published: @book.YearPublished</small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+<button type="button" class="btn btn-primary" @onclick="EditButtonClicked">Edit</button>
+<button type="button" class="btn btn-danger" @onclick="(() => DeleteClicked())">Delete</button>
+<Popup @ref="popup" OnButtonClick="DeleteAuthorAsync" />
+
+@code {
+    [Parameter]
+    public Author Author { get; set; }
+    [Parameter]
+    public EventCallback EditButtonClicked { get; set; }
+
+    private Popup popup { get; set; }
+    private IEnumerable<AuthorBook>? authorBooks;
+
+    protected override async Task OnInitializedAsync()
+    {
+        authorBooks = await AuthorService.GetAuthorBooksByIdAsync(Author.Id.ToString());
+    }
+
+    private async void DeleteAuthorAsync()
+    {
+        bool successful = await AuthorService.DeleteAuthorByIdAsync(Author.Id.ToString());
+
+        if (successful)
+            NavigationManager.NavigateTo("/authors");
+    }
+
+    private void DeleteClicked()
+    {
+        popup.Show("Are you sure you want to delete?", "Delete author", "Yes, I'm sure");
+    }
+}

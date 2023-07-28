@@ -1,0 +1,59 @@
+﻿@page "/authors"
+@using BookCatalogue.Web.Data
+@inject AuthorService AuthorService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Authors</PageTitle>
+
+<h1>Authors</h1>
+
+@if (authors == null)
+{
+    <div class="d-flex justify-content-center align-items-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <p>Here are a list of authors in our catalogue. Click on any of them to view.</p>
+
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Firstname</th>
+                <th>Lastname</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var author in authors)
+            {
+                <tr onclick="@(() => OpenViewAuthorView(author.Id))">
+                    <td>@author.Firstname</td>
+                    <td>@author.Lastname</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button type="button" class="btn btn-primary" @onclick="(() => OpenAddAuthorView())">Add author</button>
+}
+
+@code {
+    private IEnumerable<Author>? authors;
+
+    protected override async Task OnInitializedAsync()
+    {
+        authors = await AuthorService.GetAuthorsAsync();
+    }
+
+    public void OpenViewAuthorView(Guid authorId)
+    {
+        NavigationManager.NavigateTo($"/authors/{authorId.ToString()}", true);
+    }
+
+    public void OpenAddAuthorView()
+    {
+        NavigationManager.NavigateTo($"/new-author");
+    }
+}

@@ -1,0 +1,63 @@
+﻿@{
+    var showClass = IsVisible ? "d-block" : "d-none";
+}
+
+<!-- Flexbox container for aligning the toasts -->
+<div aria-live="polite" aria-atomic="true" class="d-flex justify-content-center align-items-center w-100">
+
+    <!-- Then put toasts within -->
+    <div class="toast-container p-3 @showClass" data-bs-autohide="true" data-bs-delay="5000">
+        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">@HeaderText</strong>
+                <button type="button" class="btn-close" aria-label="Close" @onclick="Close"></button>
+            </div>
+
+            <div class="toast-body">
+                @BodyText
+                <div class="mt-2 pt-2 border-top">
+                    <button type="button" class="btn btn-primary btn-sm" @onclick="OnButtonClick">@ActionButtonText</button>
+                    <button type="button" class="btn btn-secondary btn-sm" @onclick="(() => Close())">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> IsVisibleChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnButtonClick { get; set; }
+
+    [Parameter]
+    public string? HeaderText { get; set; }
+
+    [Parameter]
+    public string? BodyText { get; set; }
+
+    [Parameter]
+    public string? ActionButtonText { get; set; }
+
+    public void Show(string bodyText, string headerText = "", string actionBtnText = "Ok")
+    {
+        HeaderText = headerText;
+        BodyText = bodyText;
+        ActionButtonText = actionBtnText;
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    private void Close()
+    {
+        HeaderText = string.Empty;
+        BodyText = string.Empty;
+        ActionButtonText = string.Empty;
+        IsVisible = false;
+        StateHasChanged();
+    }
+}
